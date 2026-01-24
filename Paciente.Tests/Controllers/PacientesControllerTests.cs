@@ -50,5 +50,69 @@ namespace Paciente.Tests.Controllers
             var returned = Assert.IsAssignableFrom<IEnumerable<PacienteEntity>>(ok.Value);
             Assert.Equal(2, System.Linq.Enumerable.Count(returned));
         }
+
+        [Fact]
+        public async Task ObterPorId_ReturnsOk_WhenFound()
+        {
+            var paciente = new PacienteEntity("Davi", DateTime.UtcNow.AddYears(-30), "55555555555");
+
+            var mockRepo = new Mock<IPacienteRepository>();
+            mockRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(paciente);
+
+            var service = new PacienteService(mockRepo.Object);
+            var controller = new PacientesController(service);
+
+            var result = await controller.ObterPorId(Guid.NewGuid());
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var returned = Assert.IsType<PacienteEntity>(ok.Value);
+            Assert.Equal(paciente.Id, returned.Id);
+        }
+
+        [Fact]
+        public async Task ObterPorId_ReturnsNotFound_WhenMissing()
+        {
+            var mockRepo = new Mock<IPacienteRepository>();
+            mockRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((PacienteEntity?)null);
+
+            var service = new PacienteService(mockRepo.Object);
+            var controller = new PacientesController(service);
+
+            var result = await controller.ObterPorId(Guid.NewGuid());
+
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task Excluir_ReturnsNoContent_WhenDeleted()
+        {
+            var paciente = new PacienteEntity("Eve", DateTime.UtcNow.AddYears(-50), "66666666666");
+
+            var mockRepo = new Mock<IPacienteRepository>();
+            mockRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(paciente);
+            mockRepo.Setup(r => r.DeleteAsync(It.IsAny<Guid>())).Returns(Task.CompletedTask);
+
+            var service = new PacienteService(mockRepo.Object);
+            var controller = new PacientesController(service);
+
+            var result = await controller.Excluir(Guid.NewGuid());
+
+            Assert.IsType<NoContentResult>(result);
+            mockRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Excluir_ReturnsNotFound_WhenMissing()
+        {
+            var mockRepo = new Mock<IPacienteRepository>();
+            mockRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((PacienteEntity?)null);
+
+            var service = new PacienteService(mockRepo.Object);
+            var controller = new PacientesController(service);
+
+            var result = await controller.Excluir(Guid.NewGuid());
+
+            Assert.IsType<NotFoundResult>(result);
+        }
     }
 }
