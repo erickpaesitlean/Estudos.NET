@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs\" />
-    <Folder Include="Services\" />
+    <ProjectReference Include="..\Paciente.Domain\Paciente.Domain.csproj" />
+    <ProjectReference Include="..\Paciente.Infrastructure\Paciente.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
