@@ -28,4 +28,20 @@ public class PacientesController : ControllerBase
         var pacientes = await _service.ListarAsync();
         return Ok(pacientes);
     }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> ObterPorId(Guid id)
+    {
+        var paciente = await _service.ObterPorIdAsync(id);
+        if (paciente is null) return NotFound();
+        return Ok(paciente);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Excluir(Guid id)
+    {
+        var removed = await _service.ExcluirAsync(id);
+        if (!removed) return NotFound();
+        return NoContent();
+    }
 }

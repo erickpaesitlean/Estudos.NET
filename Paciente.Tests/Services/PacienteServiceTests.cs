@@ -42,5 +42,63 @@ namespace Paciente.Tests.Services
 
             Assert.Equal(pacientes, result);
         }
+
+        [Fact]
+        public async Task ObterPorIdAsync_ReturnsPaciente_WhenExists()
+        {
+            var paciente = new PacienteEntity("Bia", DateTime.UtcNow.AddYears(-33), "77777777777");
+
+            var mockRepo = new Mock<IPacienteRepository>();
+            mockRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(paciente);
+
+            var service = new PacienteService(mockRepo.Object);
+
+            var result = await service.ObterPorIdAsync(Guid.NewGuid());
+
+            Assert.Equal(paciente, result);
+        }
+
+        [Fact]
+        public async Task ObterPorIdAsync_ReturnsNull_WhenNotFound()
+        {
+            var mockRepo = new Mock<IPacienteRepository>();
+            mockRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((PacienteEntity?)null);
+
+            var service = new PacienteService(mockRepo.Object);
+
+            var result = await service.ObterPorIdAsync(Guid.NewGuid());
+
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task ExcluirAsync_DeletesAndReturnsTrue_WhenExists()
+        {
+            var paciente = new PacienteEntity("Cleo", DateTime.UtcNow.AddYears(-44), "88888888888");
+
+            var mockRepo = new Mock<IPacienteRepository>();
+            mockRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync(paciente);
+            mockRepo.Setup(r => r.DeleteAsync(It.IsAny<Guid>())).Returns(Task.CompletedTask);
+
+            var service = new PacienteService(mockRepo.Object);
+
+            var result = await service.ExcluirAsync(Guid.NewGuid());
+
+            Assert.True(result);
+            mockRepo.Verify(r => r.DeleteAsync(It.IsAny<Guid>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ExcluirAsync_ReturnsFalse_WhenNotFound()
+        {
+            var mockRepo = new Mock<IPacienteRepository>();
+            mockRepo.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((PacienteEntity?)null);
+
+            var service = new PacienteService(mockRepo.Object);
+
+            var result = await service.ExcluirAsync(Guid.NewGuid());
+
+            Assert.False(result);
+        }
     }
 }

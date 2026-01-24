@@ -26,4 +26,16 @@ public class PacienteService
 
     public Task<IEnumerable<PacienteEntity>> ListarAsync()
         => _repository.GetAllAsync();
+
+    public Task<PacienteEntity?> ObterPorIdAsync(Guid id)
+        => _repository.GetByIdAsync(id);
+
+    public async Task<bool> ExcluirAsync(Guid id)
+    {
+        var paciente = await _repository.GetByIdAsync(id);
+        if (paciente is null) return false;
+
+        await _repository.DeleteAsync(id);
+        return true;
+    }
 }
